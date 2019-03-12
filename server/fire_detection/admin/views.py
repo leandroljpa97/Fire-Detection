@@ -4,6 +4,8 @@ from django.core.serializers import serialize
 from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
+from management.models import Users, Devices, Fires
+
 
 import json
 import os
@@ -29,9 +31,18 @@ def thresholds(request):
 
 def devices(request):
 	return HttpResponse('<p>devices</p>')
+	
 
 def addDevice(request):
+	if request.method == POST:
+
+		while True:
+			_token = random.randint(1, 101)
+			aux = Devices.objectss.filter(token = _token )
+			if not aux:
+				break
 	return HttpResponse('<p> Add new device </p>')
+
 
 def fires(request):
 	return HttpResponse('<p> firessAdmin </p>')
