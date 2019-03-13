@@ -4,7 +4,7 @@ from django.core.serializers import serialize
 from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
-from management.models import Users, Devices, Fires
+from management.models import Users, Devices, Fires, Secrets, Conditions
 import random
 
 import json
@@ -24,15 +24,15 @@ def signUp(request):
 		auxUser = Users.objects.filter(username = _username)
 		
 		#check if user not exists yet
-		if not auxUser:
+		if auxUser.count() == 0:
 			_password = request.POST.get('password', '')
-			_user = Users(username = str(_username), password = str(_password))
+			_user = Users(username = _username, password = _password)
 			_user.save()
 			response_data = {}
-			response_data['check'] = 0	
+			response_data['check'] = 1	
 		else:
 			response_data = {}
-			response_data['check'] = 1	
+			response_data['check'] = 0	
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -43,7 +43,7 @@ def login(request):
 		_password = request.POST.get('password', '')
 
 		x = Users.objects.filter(username = _username, password = _password)
-		if not x:
+		if x.count() == 0:
 			response_data = {}
 			response_data['check'] = 0
 
@@ -58,19 +58,21 @@ def login(request):
 
 
 
-def Devices(request):
+def Devicesx(request):
 	# if is POST REPOST is to insert new device
 	if request.method == 'POST':
 		_deviceToken = request.POST.get('token','')
+		_localization = request.POST.get('localization','')
 		_username = request.POST.get('username','')
-		auxDevice = Devices.objects.filter(token = _deviceToken )
+		auxDevice = Devices.objects.all()
+
 		if auxDevice.count()>0:
-			Devices.objects.filter(token = _deviceToken).update(user = _username)
-			response_data = {}
-			response_data['check'] = 0
-		else:
+			Devices.objects.filter(token = _deviceToken).update(username = _username,localization = _localization)
 			response_data = {}
 			response_data['check'] = 1
+		else:
+			response_data = {}
+			response_data['check'] = 0
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -78,23 +80,47 @@ def Devices(request):
 	# if it is GET REQUEST we have to list all devices
 	else:
 		_username = request.POST.get('username','')
-		_user = Users. objects.filter(username = _username)
-		_devices = Devices.objects.filter( user = _user[0])
-		response = serialize("json", _devices)
-		return HttpResponse(response, content_type = 'application/json')
+		_password = request.POST.get('password','')
+		_user = Users.objects.filter(username = _username, password = _password)
+		if _user.exists():
+			_devices = Devices.objects.filter( user = _user[0].username)
+			response = serialize("json", _devices)
+			return HttpResponse(response, content_type = 'application/json')
+		else:
+			return HttpResponse("Error: Invalid Request", content_type = "text/plain", status = 400)
 	
 
 
 def fires(request):
-	_deviceId = request.POST.get('id','')
-	_device = Devices.objects.filter(_id = _deviceId )
-	allFires = Devices.objects.filter( device = _device )
-	response = serialize("json", allFires)
-	return HttpResponse(response, content_type = 'application/json')
+	_username = request.POST.get('username','')
+	_password = request.POST.get('password','')
+	_user = Users. objects.filter(username = _username, password = _password)
+
+	if _user.count() > 0:
+		_deviceId = request.POST.get('id','')
+		_device = Devices.objects.filter(_id = _deviceId )
+		allFires = Devices.objects.filter( device = _device )
+		response = serialize("json", allFires)
+		return HttpResponse(response, content_type = 'application/json')
+	else:
+		return HttpResponse("Error: Invalid Request", content_type = "text/plain", status = 400)
+
 
 
 def actualState(request):
-	return HttpResponse('<p>actualState</p>')
+	_username = request.POST.get('username','')
+	_password = request.POST.get('password','')
+	_user = Users. objects.filter(username = _username, password = _password)
+
+	if _user.count() > 0:
+		_deviceId = request.POST.get('id','')
+		_device = Devices.objects.filter( _id = _deviceId )
+		_conditions = Conditions.objects.filter( user = _device[0]).order_by('date').first()
+		print(_conditions)
+		return HttpResponse('<p>actualState</p>')
+	else:
+		return HttpResponse("Error: Invalid Request", content_type = "text/plain", status = 400)
+
 
 def temperature(request):
 	return HttpResponse('<p> temperature</p>')
