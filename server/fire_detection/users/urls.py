@@ -13,6 +13,10 @@ urlpatterns = [
     path('humidity/', csrf_exempt(views.humidity), name = 'humidity'),
     path('carbon/', csrf_exempt(views.carbon), name = 'carbon'),
     path('devices/', csrf_exempt(views.Devicesx), name = 'Devices'),
+    path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
+    path('periodic/', csrf_exempt(views.getValuesArduino), name = 'Data'),
+
+
 
 
 

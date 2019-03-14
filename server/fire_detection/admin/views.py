@@ -6,6 +6,8 @@ import requests
 from django.utils.timezone import now
 from management.models import Users, Devices, Fires, Secrets, Conditions
 import random
+import ast
+
 
 import json
 import os
@@ -70,13 +72,16 @@ def thresholds(request):
 
 	if request.method == 'POST':
 		if not checkAdmin(request):
-			humidityTh = int(request.POST.get('humidity', ''))
-			temperatureTh = int(request.POST.get('temperature', ''))
-			carbonTh = int(request.POST.get('carbon', ''))
-
-			#send information to SigFox
-
 			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+		print('ola')
+		humidityTh = int(ast.literal_eval(request.POST.get('humidity', '')))
+		temperatureTh = int(ast.literal_eval(request.POST.get('temperature', '')))
+		carbonTh = int(ast.literal_eval(request.POST.get('carbon', '')))
+		print(carbonTh)
+		print(type(carbonTh))
+		responseData = {}
+		responseData['check'] = 1
+		return HttpResponse(json.dumps(responseData), content_type="application/json")
 
 def devices(request):
 	if request.method == 'POST':
