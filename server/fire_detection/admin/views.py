@@ -26,7 +26,7 @@ carbonTh = 0
 
 
 def checkAdmin(request):
-	_secret = request.POST.get('secret', '')
+	_secret = int(ast.literal_eval(request.POST.get('secret', '')))
 	aux = Secrets.objects.filter(secret = _secret)
 	if aux.count() > 0:
 		return 1
@@ -36,7 +36,7 @@ def login(request):
 	if request.method == 'POST':
 		# Try to log admin
 		username = request.POST.get('username', '')
-		password = request.POST.get('password', '')
+		password =  request.POST.get('password', '')
 		if username == 'admin' and password == '123':
 			while True:
 				_secret = random.randint(1, 1000)
@@ -77,8 +77,7 @@ def thresholds(request):
 		humidityTh = int(ast.literal_eval(request.POST.get('humidity', '')))
 		temperatureTh = int(ast.literal_eval(request.POST.get('temperature', '')))
 		carbonTh = int(ast.literal_eval(request.POST.get('carbon', '')))
-		print(carbonTh)
-		print(type(carbonTh))
+
 		responseData = {}
 		responseData['check'] = 1
 		return HttpResponse(json.dumps(responseData), content_type="application/json")
@@ -116,19 +115,31 @@ def addDevice(request):
 				return HttpResponse(json.dumps(responseData), content_type="application/json")
 
 
-		
-
-
-
 
 def fires(request):
+	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 	return HttpResponse('<p> firessAdmin </p>')
 
 def temperature(request):
+	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 	return HttpResponse('<p> temperature</p>')
 
 def humidity(request):
+	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
+		
 	return HttpResponse('<p> humidity </p>')
 
 def carbon(request):
+	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
+
 	return HttpResponse('<p> carbon </p>')

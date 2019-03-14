@@ -26,7 +26,7 @@ def checkUser(request):
 	_password = request.POST.get('password','')
 
 	usersAux = Users.objects.filter(username = _username).filter(password = _password)
-	if userAux.count() > 0:
+	if usersAux.count() > 0:
 		return 1
 
 	return 0 
@@ -100,7 +100,7 @@ def ListAllDevices(request):
 
 		_username = request.POST.get('username','')
 	
-		_devices = Devices.objects.filter( username = _user[0].username)
+		_devices = Devices.objects.filter( username = _username)
 		response = serialize("json", _devices)
 		return HttpResponse(response, content_type = 'application/json')
 		

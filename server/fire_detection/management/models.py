@@ -13,7 +13,7 @@ class Users(models.Model):
 class Devices(models.Model):
 	_id = models.IntegerField(primary_key = True) 
 	username = models.CharField(max_length = 255)
-	token = models.CharField(max_length = 255)
+	token = models.IntegerField()
 	localization = models.CharField(max_length = 255)
 
 	def __str__(self):
