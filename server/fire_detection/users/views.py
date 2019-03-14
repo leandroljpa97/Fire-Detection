@@ -21,6 +21,15 @@ from django.utils.timezone import now
 
 # Create your views here.
 
+def checkUser(request):
+	_username = request.POST.get('username','')
+	_password = request.POST.get('password','')
+
+	usersAux = Users.objects.filter(username = _username).filter(password = _password)
+	if userAux.count() > 0:
+		return 1
+
+	return 0 
 
 def signUp(request):
 	if request.method == 'POST':
@@ -62,16 +71,19 @@ def login(request):
 
 
 
-def Devicesx(request):
+def DevicesUpd(request):
 	# if is POST REPOST is to insert new device
 	if request.method == 'POST':
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
 		_deviceToken = request.POST.get('token','')
 		_localization = request.POST.get('localization','')
 		_username = request.POST.get('username','')
 		auxDevice = Devices.objects.all()
 
 		if auxDevice.count()>0:
-			Devices.objects.filter(token = _deviceToken).update(username = _username,localization = _localization)
+			Devices.objects.filter(token = _deviceToken).update(username = _username, localization = _localization)
 			response_data = {}
 			response_data['check'] = 1
 		else:
@@ -80,47 +92,39 @@ def Devicesx(request):
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+def ListAllDevices(request):
 	# if it is GET REQUEST we have to list all devices
-	if request.method == 'GET':
-		_username = request.GET.get('username','')
-		print(_username)
-		_password = request.META.get('password','')
-		print(_password)
-		_user = Users.objects.filter(username = _username).filter(password = _password)
-		#print(_user[0].username)
-		print(_user)
-		if _user.exists():
-			_devices = Devices.objects.filter( user = _user[0].username)
-			response = serialize("json", _devices)
-			return HttpResponse(response, content_type = 'application/json')
-		else:
-			return HttpResponse("Error: Invalid Requestx", content_type = "text/plain", status = 400)
+	if request.method == 'POST':
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
+		_username = request.POST.get('username','')
 	
+		_devices = Devices.objects.filter( username = _user[0].username)
+		response = serialize("json", _devices)
+		return HttpResponse(response, content_type = 'application/json')
+		
 
 
 def fires(request):
-	_username = request.POST.get('username','')
-	_password = request.POST.get('password','')
-	_user = Users. objects.filter(username = _username, password = _password)
+	if request.method == 'POST':
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 
-	if _user.count() > 0:
 		_token = request.POST.get('token','')
 		_device = Devices.objects.filter(token = _token)
 		allFires = Devices.objects.filter( device = _device )
 		response = serialize("json", allFires)
 		return HttpResponse(response, content_type = 'application/json')
-	else:
-		return HttpResponse("Error: Invalid Request", content_type = "text/plain", status = 400)
+
 
 
 
 def actualState(request):
-	_username = request.POST.get('username','')
-	_password = request.POST.get('password','')
-	_user = Users. objects.filter(username = _username, password = _password)
+	if request.method == 'POST':
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 
-	if _user.count() > 0:
 		_token = request.POST.get('token','')
 		_device = Devices.objects.filter( token = _token )
 		_conditions = Conditions.objects.filter( device= _device[0]).order_by('date').last()
@@ -129,10 +133,7 @@ def actualState(request):
 		response_data['temperature'] = _conditions.temperature
 		response_data['carbon'] = _conditions.carbon
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
-		
 
-	else:
-		return HttpResponse("Error: Invalid Request", content_type = "text/plain", status = 400)
 
 
 def temperature(request):

@@ -12,7 +12,8 @@ urlpatterns = [
     path('temperature/', csrf_exempt(views.temperature), name = 'temperature'),
     path('humidity/', csrf_exempt(views.humidity), name = 'humidity'),
     path('carbon/', csrf_exempt(views.carbon), name = 'carbon'),
-    path('devices/', csrf_exempt(views.Devicesx), name = 'Devices'),
+    path('updateDevice/', csrf_exempt(views.DevicesUpd), name = 'DevicesUpdate'),
+    path('devices/', csrf_exempt(views.ListAllDevices), name = 'DevicesAll'),
     path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
     path('periodic/', csrf_exempt(views.getValuesArduino), name = 'Data'),
 
