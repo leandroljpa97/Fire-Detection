@@ -5,6 +5,7 @@ from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
 from management.models import Users, Devices, Fires, Secrets, Conditions
+from pusher_push_notifications import PushNotifications
 import random
 import ast
 
@@ -55,7 +56,7 @@ def login(request):
 		_username = request.POST.get('username', '')
 		_password = request.POST.get('password', '')
 
-		x = Users.objects.filter(username = _username, password = _password)
+		x = Users.objects.filter(username = _username).filter(password = _password)
 		if x.count() == 0:
 			response_data = {}
 			response_data['check'] = 0
@@ -175,3 +176,50 @@ def Fresh(request):
 	Fires.objects.all().delete()
 	Conditions.objects.all().delete()
 	Secrets.objects.all().delete()
+
+def Push(request):
+	beams_client = PushNotifications(
+		instance_id = '1a81f3fb-fa47-4820-9742-bf752a077700',
+		secret_key = '5BCD4BB732BD48B78403BD3A35B2946A1B9FF58DD90D5B3F8AB938AE68EBE235',
+	)
+
+	response = beams_client.publish_to_interests(
+	    interests=[ 'Leandroo'],
+	    publish_body={
+		'apns': {
+		    'aps': {
+		        'alert': 'Hello!'
+		    }
+		},
+		'fcm': {
+		    'notification': {
+		        'title': 'Hello',
+		        'body': 'Hello, World!'
+		    }
+		}
+	    }
+	)
+
+	responsee = beams_client.publish_to_interests(
+	    interests=[ 'Leandro'],
+	    publish_body={
+		'apns': {
+		    'aps': {
+		        'alert': 'Benfica!'
+		    }
+		},
+		'fcm': {
+		    'notification': {
+		        'title': 'Benfica',
+		        'body': 'Hello, World!!!'
+		    }
+		}
+	    }
+	)
+
+
+	print(response['publishId'])
+	return HttpResponse('<p> Push <p>')
+
+
+
