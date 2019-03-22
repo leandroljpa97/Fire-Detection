@@ -5,7 +5,7 @@ from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
 from management.models import Users, Devices, Fires, Secrets, Conditions
-from pusher_push_notifications import PushNotifications
+# from pusher_push_notifications import PushNotifications
 import random
 import ast
 
@@ -30,23 +30,23 @@ def checkUser(request):
 	if usersAux.count() > 0:
 		return 1
 
-	return 0 
+	return 0
 
 def signUp(request):
 	if request.method == 'POST':
 		_username = request.POST.get('username', '')
 		auxUser = Users.objects.filter(username = _username)
-		
+
 		#check if user not exists yet
 		if auxUser.count() == 0:
 			_password = request.POST.get('password', '')
 			_user = Users(username = _username, password = _password)
 			_user.save()
 			response_data = {}
-			response_data['check'] = 1	
+			response_data['check'] = 1
 		else:
 			response_data = {}
-			response_data['check'] = 0	
+			response_data['check'] = 0
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -61,14 +61,15 @@ def login(request):
 			response_data = {}
 			response_data['check'] = 0
 
-		else:	
+		else:
 			response_data = {}
 			response_data['check'] = 1
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 	else:
-		return HttpResponse('<p> oii? </p>')
+		response = render(request, './index.html')
+		return response
 
 
 
@@ -100,11 +101,11 @@ def ListAllDevices(request):
 			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 
 		_username = request.POST.get('username','')
-	
+
 		_devices = Devices.objects.filter( username = _username)
 		response = serialize("json", _devices)
 		return HttpResponse(response, content_type = 'application/json')
-		
+
 
 
 def fires(request):
@@ -169,7 +170,7 @@ def getValuesArduino(request):
 
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
+"""
 def Fresh(request):
 	Users.objects.all().delete()
 	Devices.objects.all().delete()
@@ -221,5 +222,4 @@ def Push(request):
 	print(response['publishId'])
 	return HttpResponse('<p> Push <p>')
 
-
-
+"""

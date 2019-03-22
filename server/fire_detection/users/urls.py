@@ -1,6 +1,7 @@
 from django.urls import path,include
 from . import views
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 app_name='users'
 
@@ -14,9 +15,9 @@ urlpatterns = [
     path('carbon/', csrf_exempt(views.carbon), name = 'carbon'),
     path('updateDevice/', csrf_exempt(views.DevicesUpd), name = 'DevicesUpdate'),
     path('devices/', csrf_exempt(views.ListAllDevices), name = 'DevicesAll'),
-    path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
+    # path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
     path('periodic/', csrf_exempt(views.getValuesArduino), name = 'Data'),
-    path('push/', csrf_exempt(views.Push), name = 'PushNotification'),
+    # path('push/', csrf_exempt(views.Push), name = 'PushNotification'),
 
 
 
