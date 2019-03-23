@@ -20,17 +20,17 @@ class Devices(models.Model):
 		return self.token
 
 class Fires(models.Model):
+	_id = models.IntegerField(primary_key = True) 
 	date =  models.DateTimeField(default = timezone.now)
-	device = models.ForeignKey(Devices, on_delete=models.CASCADE, related_name='devicesFire')
+	device = models.IntegerField()
 	description = models.CharField(max_length = 255)
 	def __str__(self):
 		return self.device
 
 class Conditions(models.Model):
-	device = models.ForeignKey(Devices, on_delete=models.CASCADE, related_name='devicesCondit')
+	device = models.IntegerField()
 	temperature = models.IntegerField() 
 	humidity = models.IntegerField() 
-	carbon = models.IntegerField() 
 	date = models.DateTimeField(default = timezone.now)
 	def __str__(self):
 		return self.date
@@ -39,5 +39,11 @@ class Secrets(models.Model):
 	secret = models.IntegerField() 
 	def __str__(self):
 		return self.secret
+
+class Notifications(models.Model):
+	email = models.CharField(max_length = 255)
+	def __str__(self):
+		return self.email
+
 
 

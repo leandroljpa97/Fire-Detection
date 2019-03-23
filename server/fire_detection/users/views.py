@@ -4,7 +4,7 @@ from django.core.serializers import serialize
 from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
-from management.models import Users, Devices, Fires, Secrets, Conditions
+from management.models import Users, Devices, Fires, Secrets, Conditions, Notifications
 # from pusher_push_notifications import PushNotifications
 import random
 import ast
@@ -31,6 +31,8 @@ def checkUser(request):
 		return 1
 
 	return 0
+
+
 
 def signUp(request):
 	if request.method == 'POST':
@@ -109,83 +111,73 @@ def ListAllDevices(request):
 
 
 def fires(request):
+
 	if request.method == 'POST':
 		if not checkUser(request):
 			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 
-		_token = request.POST.get('token','')
+		_token = int(ast.literal_eval(request.POST.get('token','')))
 		_device = Devices.objects.filter(token = _token)
-		allFires = Devices.objects.filter( device = _device )
+		print(_device[0]._id)
+		allFires = Fires.objects.filter( device = _device[0]._id )
 		response = serialize("json", allFires)
 		return HttpResponse(response, content_type = 'application/json')
+	else:
+		
+		allFires=Fires.objects.all()
+		print(allFires)
+		fires= []
+		for item in allFires:
+			print(item.date)
+			fires.insert(0,{'date':item.date, 'content':item.description })
+
+		return JsonResponse({'fires':fires})
 
 
 
 
 def actualState(request):
+	
 	if request.method == 'POST':
 		if not checkUser(request):
 			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
 
-		_token = request.POST.get('token','')
+		_token = int(ast.literal_eval(request.POST.get('token','')))
 		_device = Devices.objects.filter( token = _token )
-		_conditions = Conditions.objects.filter( device= _device[0]).order_by('date').last()
+		_conditions = Conditions.objects.filter( device = _device[0]._id).order_by('date').last()
 		response_data = {}
 		response_data['humidity'] = _conditions.humidity
 		response_data['temperature'] = _conditions.temperature
-		response_data['carbon'] = _conditions.carbon
 		return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 
-def temperature(request):
+def saveMail(request):
 	if request.method == 'POST':
-		_token = request.POST.get('token','')
-		auxDevice = Devices.objects.filter(token= _token)
-		_conditions = Conditions.objects.filter(device = auxDevice[0])
-		response = serialize("json", _conditions)
-		return HttpResponse(response, content_type = 'application/json')
+		_email = str(request.POST.get('mail'))
+		newmail = Notifications(email = _email)
+		newmail.save()
+		return HttpResponse(status=204)
 
-	return HttpResponse('<p> temperature</p>')
 
-def humidity(request):
-	return HttpResponse('<p> humidity </p>')
 
-def carbon(request):
-	return HttpResponse('<p> carbon </p>')
-
-def getValuesArduino(request):
-	if request.method == 'POST':
-		print('entrei')
-		_humidity = int(ast.literal_eval(request.POST.get('humidity','')))
-		_temperature = int(ast.literal_eval(request.POST.get('temperature','')))
-		_carbon = int(ast.literal_eval(request.POST.get('carbon','')))
-		_id = request.POST.get('id','')
-
-		auxDevice = Devices.objects.filter(_id = _id)
-		newConditions = Conditions(device = auxDevice[0], temperature= _temperature, humidity = _humidity, carbon = _carbon, date = now())
-		newConditions.save()
-		response_data = {}
-		response_data['check'] = 1
-
-		return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-"""
 def Fresh(request):
 	Users.objects.all().delete()
 	Devices.objects.all().delete()
 	Fires.objects.all().delete()
 	Conditions.objects.all().delete()
 	Secrets.objects.all().delete()
+	Notifications.objects.all().delete()
 
-def Push(request):
+
+def Push(_device):
 	beams_client = PushNotifications(
 		instance_id = '1a81f3fb-fa47-4820-9742-bf752a077700',
 		secret_key = '5BCD4BB732BD48B78403BD3A35B2946A1B9FF58DD90D5B3F8AB938AE68EBE235',
 	)
 
 	response = beams_client.publish_to_interests(
-	    interests=[ 'Leandroo'],
+	    interests=[ str(_device)],
 	    publish_body={
 		'apns': {
 		    'aps': {
@@ -201,25 +193,42 @@ def Push(request):
 	    }
 	)
 
-	responsee = beams_client.publish_to_interests(
-	    interests=[ 'Leandro'],
-	    publish_body={
-		'apns': {
-		    'aps': {
-		        'alert': 'Benfica!'
-		    }
-		},
-		'fcm': {
-		    'notification': {
-		        'title': 'Benfica',
-		        'body': 'Hello, World!!!'
-		    }
-		}
-	    }
-	)
+
+def newFire(_device):
+	auxFire = Fires.objects.all()
+	lastFire= Fires.objects.order_by('_id').last()
+	if auxFire.count() == 0:
+		newId = 1
+	else:
+		newId = lastFire._id + 1
+		_newFire = Fires(_id = newId, date= now(), device = _device, description ='Admin did not put any description yet');
+		_newFire.save()
+		return HttpResponse('<p> New Fire </p>')
 
 
-	print(response['publishId'])
-	return HttpResponse('<p> Push <p>')
+def Uplink(request):
+	if request.method == 'POST':
+		_data = request.POST.get('data','')
+		_id = int(ast.literal_eval(request.POST.get('device','')))
 
-"""
+		if int(ast.literal_eval(_data))==1:
+			return HttpResponse(status=204)
+
+		else:
+			out = [(_data[i:i+3]) for i in range(0, len(_data), 3)]
+
+			_temperature = out[0]
+			print(_temperature)
+			_humidity = out[1]
+			print(_humidity)
+			_fire = int(ast.literal_eval(out[2]))
+			print(_fire)
+			if _fire == 1:
+				_device = Devices.objects.filter(_id = _id)
+				_devId = _device[0]._id
+				newFire(_devId)
+				Push(_devId)
+
+			newCondition = Conditions(device = _id, temperature = _temperature, humidity = _humidity, date = now())
+
+		return HttpResponse(status=204)

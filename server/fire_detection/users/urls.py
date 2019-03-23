@@ -10,18 +10,11 @@ urlpatterns = [
 	path('signup/', csrf_exempt(views.signUp), name = 'signUp'),
     path('fires/', csrf_exempt(views.fires), name = 'allFires'),
     path('conditions/', csrf_exempt(views.actualState), name = 'actualState'),
-    path('temperature/', csrf_exempt(views.temperature), name = 'temperature'),
-    path('humidity/', csrf_exempt(views.humidity), name = 'humidity'),
-    path('carbon/', csrf_exempt(views.carbon), name = 'carbon'),
     path('updateDevice/', csrf_exempt(views.DevicesUpd), name = 'DevicesUpdate'),
     path('devices/', csrf_exempt(views.ListAllDevices), name = 'DevicesAll'),
-    # path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
-    path('periodic/', csrf_exempt(views.getValuesArduino), name = 'Data'),
-    # path('push/', csrf_exempt(views.Push), name = 'PushNotification'),
-
-
-
-
+    path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
+    path('sensors/', csrf_exempt(views.Uplink), name = 'Data'),
+    path('mail/',csrf_exempt(views.saveMail), name = 'mail'),
 
 
     ]

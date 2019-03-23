@@ -11,10 +11,6 @@ urlpatterns = [
 	path('device/', csrf_exempt(views.addDevice), name = 'addDevice'),
 	path('thresholds/', csrf_exempt(views.thresholds), name = 'thresholds'),
 	path('fires/', csrf_exempt(views.fires), name = 'fires'),
-	path('temperature/', csrf_exempt(views.temperature), name = 'temperatureA'),
-    path('humidity/', csrf_exempt(views.humidity), name = 'humidityA'),
-    path('carbon/', csrf_exempt(views.carbon), name = 'carbonA'),
-
-
-
+	path('allFires/', csrf_exempt(views.allFires), name = 'Afires'),
+	path('periodic/', csrf_exempt(views.downlink), name = 'periodic'),
     ]
