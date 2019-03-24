@@ -125,7 +125,6 @@ def fires(request):
 	else:
 		
 		allFires=Fires.objects.all()
-		print(allFires)
 		fires= []
 		for item in allFires:
 			print(item.date)
