@@ -15,6 +15,8 @@ urlpatterns = [
     path('fresh/', csrf_exempt(views.Fresh), name = 'Fresh'),
     path('sensors/', csrf_exempt(views.Uplink), name = 'Data'),
     path('mail/',csrf_exempt(views.saveMail), name = 'mail'),
+    path('fire/',csrf_exempt(views.aux), name = 'fire'),
+
 
 
     ]

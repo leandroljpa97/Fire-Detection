@@ -31,6 +31,7 @@ class Conditions(models.Model):
 	device = models.IntegerField()
 	temperature = models.IntegerField() 
 	humidity = models.IntegerField() 
+	gas = models.IntegerField()
 	date = models.DateTimeField(default = timezone.now)
 	def __str__(self):
 		return self.date

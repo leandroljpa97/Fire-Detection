@@ -32,6 +32,15 @@ def checkUser(request):
 
 	return 0
 
+def aux(request):
+	_fire = Fires(_id = 15, date = now(), device = 12, description = 'Solved Fire')
+	_fire.save()
+	_fire2 = Fires(_id = 72, date = now(), device = 10, description = 'dangerous fire in Kitchen')
+	_fire2.save()
+	_fire3 = Fires(_id = 310, date = now(), device = 10, description = 'COntrolled fire in Pedrogão Grande')
+	_fire3.save()
+	return HttpResponse("<p> olaa </p>")
+
 
 
 def signUp(request):
