@@ -16,6 +16,11 @@ urlpatterns = [
     path('sensors/', csrf_exempt(views.Uplink), name = 'Data'),
     path('mail/',csrf_exempt(views.saveMail), name = 'mail'),
     path('fire/',csrf_exempt(views.aux), name = 'fire'),
+    path('alarm/',csrf_exempt(views.enableAlarm), name = 'enablealarm'),
+    path('state/',csrf_exempt(views.getAlarmAndBombState), name = 'AlarmAndBombState'),
+
+
+
 
 
 

@@ -8,6 +8,8 @@ from management.models import Users, Devices, Fires, Secrets, Conditions
 import random
 import ast
 
+from users.views import bombState, alarmState, alarmEnable
+
 
 import json
 import os
@@ -22,7 +24,7 @@ from django.utils import timezone
 #threshold default values
 temperatureTh = 0
 humidityTh = 0
-alarm = 0
+gasTh = 0
 
 
 
@@ -71,15 +73,15 @@ def users(request):
 def thresholds(request):
 	global humidityTh
 	global temperatureTh
+	global gasTh
 
 	if request.method == 'POST':
 		if not checkAdmin(request):
 			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
-		print('ola')
 		humidityTh = int(ast.literal_eval(request.POST.get('humidity', '')))
 		temperatureTh = int(ast.literal_eval(request.POST.get('temperature', '')))
+		gasTh = int(ast.literal_eval(request.POST.get('gas', '')))
 
-		print(humidityTh)
 
 		responseData = {}
 		responseData['check'] = 1
@@ -146,9 +148,12 @@ def fires(request):
 def downlink(request):
 	global temperatureTh 
 	global humidityTh
-	global alarm 
+	global gasTh
+	global alarmEnable
+	global alarmState
+	global bombState
 
-	sendData = str(temperatureTh) + str(humidityTh) + str(alarm)
+	sendData = str(temperatureTh) + str(humidityTh) + str(gasTh) + str(alarmEnable) + str(alarmState) + str(bombState)+" "+" "
 	if request.method == 'POST':
 		_data = request.POST.get('data','')
 

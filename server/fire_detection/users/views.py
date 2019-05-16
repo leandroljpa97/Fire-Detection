@@ -19,6 +19,10 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
 
+alarmState = 0
+bombState = 0
+alarmEnable = 0
+
 
 # Create your views here.
 
@@ -214,7 +218,28 @@ def newFire(_device):
 		return HttpResponse('<p> New Fire </p>')
 
 
+def getAlarmAndBombState(request):
+	global alarmState 
+	global bombState 
+
+
+	response_data = {}
+	response_data['alarm'] = alarmState
+	response['bomb'] = bombState
+	return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+def enableAlarm(request):
+	global alarmEnable
+	if request.method == "POST":
+		alarmEnable = int(ast.literal_eval(request.POST.get('alarmEnable','')))
+		return HttpResponse(status=204)
+	return HttpResponse(status=204)
+
+
 def Uplink(request):
+	global alarmState
+	global bombState
+
 	if request.method == 'POST':
 		_data = request.POST.get('data','')
 		_id = int(ast.literal_eval(request.POST.get('device','')))
@@ -223,20 +248,23 @@ def Uplink(request):
 			return HttpResponse(status=204)
 
 		else:
-			out = [(_data[i:i+3]) for i in range(0, len(_data), 3)]
+			out = [(_data[i:i+5]) for i in range(0, len(_data), 5)]
 
 			_temperature = out[0]
-			print(_temperature)
 			_humidity = out[1]
-			print(_humidity)
-			_fire = int(ast.literal_eval(out[2]))
-			print(_fire)
+			_gas = out[2]
+			alarmState = int(ast.literal_eval(out[3]))
+			bombState = int(ast.literal_eval(out[4]))
+
+			_fire = int(ast.literal_eval(out[5]))
 			if _fire == 1:
 				_device = Devices.objects.filter(_id = _id)
 				_devId = _device[0]._id
 				newFire(_devId)
 				Push(_devId)
 
-			newCondition = Conditions(device = _id, temperature = _temperature, humidity = _humidity, date = now())
+			newCondition = Conditions(device = _id, temperature = _temperature , humidity = _humidity,gas = _gas, date = now())
 
 		return HttpResponse(status=204)
+
+

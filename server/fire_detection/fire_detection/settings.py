@@ -83,18 +83,16 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/fire-detection-235819:europe-west1:pedro-bd',
-            'USER': 'sqlUser',
+            'HOST': '/cloudsql/fire-240718:us-central1:db',
+            'USER': 'leandro',
             'PASSWORD': 'ola',
-            'NAME': 'instanceDb',
-
+            'NAME': 'rmsf',
         }
     }
 
     STATIC_URL = '/static/'
 
     STATIC_ROOT = '/static/'
-
 
 else:
     # Running locally so connect to either a local MySQL instance or connect 
@@ -103,19 +101,20 @@ else:
     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '127.0.0.1',
+            'PORT': '3310',
+            'NAME': 'rmsf',
+            'USER': 'leandro',
+            'PASSWORD': 'ola',
         }
-
-
     }
-    
+
     STATIC_URL = '/static/'
 
     STATICFILES_DIRS = (
     os.path.join(BASE_DIR,'static'),
     )
-
 
 
 
