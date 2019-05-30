@@ -20,8 +20,4 @@ urlpatterns = [
     path('state/',csrf_exempt(views.getAlarmAndBombState), name = 'AlarmAndBombState'),
 
 
-
-
-
-
     ]

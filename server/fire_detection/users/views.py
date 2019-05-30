@@ -26,6 +26,8 @@ alarmEnable = 0
 
 # Create your views here.
 
+
+
 def checkUser(request):
 	_username = request.POST.get('username','')
 	_password = request.POST.get('password','')
@@ -97,7 +99,7 @@ def DevicesUpd(request):
 		_deviceToken = request.POST.get('token','')
 		_localization = request.POST.get('localization','')
 		_username = request.POST.get('username','')
-		auxDevice = Devices.objects.all()
+		auxDevice = Devices.objects.filter(token = _deviceToken)
 
 		if auxDevice.count()>0:
 			Devices.objects.filter(token = _deviceToken).update(username = _username, localization = _localization)
@@ -149,6 +151,7 @@ def fires(request):
 
 
 def actualState(request):
+	global enableAlarm
 	
 	if request.method == 'POST':
 		if not checkUser(request):
@@ -156,11 +159,16 @@ def actualState(request):
 
 		_token = int(ast.literal_eval(request.POST.get('token','')))
 		_device = Devices.objects.filter( token = _token )
-		_conditions = Conditions.objects.filter( device = _device[0]._id).order_by('date').last()
+		_conditions = Conditions.objects.filter( device = _device[0]._id).order_by('date')
 		response_data = {}
-		response_data['humidity'] = _conditions.humidity
-		response_data['temperature'] = _conditions.temperature
-		return HttpResponse(json.dumps(response_data), content_type="application/json")
+		if _conditions.count() > 0:
+			_conditions = Conditions.objects.filter( device = _device[0]._id).order_by('date').last()
+			response_data['humidity'] = _conditions.humidity
+			response_data['temperature'] = _conditions.temperature
+			response_data['gas'] = _conditions.gas
+			response_data['enableAlarm'] = enableAlarm
+			return HttpResponse(json.dumps(response_data), content_type="application/json")
+		return HttpResponse(status = 204)
 
 
 
@@ -193,13 +201,13 @@ def Push(_device):
 	    publish_body={
 		'apns': {
 		    'aps': {
-		        'alert': 'Hello!'
+		        'alert': 'Fire! Atention'
 		    }
 		},
 		'fcm': {
 		    'notification': {
-		        'title': 'Hello',
-		        'body': 'Hello, World!'
+		        'title': 'Atention, Fire in device '+ _device,
+		        'body': 'Fire in device '+ _device
 		    }
 		}
 	    }
@@ -241,30 +249,37 @@ def Uplink(request):
 	global bombState
 
 	if request.method == 'POST':
-		_data = request.POST.get('data','')
-		_id = int(ast.literal_eval(request.POST.get('device','')))
+		body_unicode = request.body.decode('utf-8')
+		body = json.loads(body_unicode)
+		_data = body['data']
+
+
 
 		if int(ast.literal_eval(_data))==1:
 			return HttpResponse(status=204)
 
 		else:
-			out = [(_data[i:i+5]) for i in range(0, len(_data), 5)]
+			_id = int(ast.literal_eval(body['device']))
+			aux = str(int(ast.literal_eval(_data)))
+			out = [(aux[i:i+3]) for i in range(0, len(aux), 3)]
+			
+			_temperature = int(ast.literal_eval(out[0]))
+			_humidity =  int(ast.literal_eval(out[1]))
+			_gas =  int(ast.literal_eval(out[2]))
+			## alarmState = int(ast.literal_eval(out[3]))
+			## bombState = int(ast.literal_eval(out[4]))
 
-			_temperature = out[0]
-			_humidity = out[1]
-			_gas = out[2]
-			alarmState = int(ast.literal_eval(out[3]))
-			bombState = int(ast.literal_eval(out[4]))
+			_fire =  int(ast.literal_eval(out[3]))
 
-			_fire = int(ast.literal_eval(out[5]))
-			if _fire == 1:
+			if _fire != 0:
+				print(_fire)
 				_device = Devices.objects.filter(_id = _id)
 				_devId = _device[0]._id
 				newFire(_devId)
 				Push(_devId)
 
 			newCondition = Conditions(device = _id, temperature = _temperature , humidity = _humidity,gas = _gas, date = now())
-
+			newCondition.save()
 		return HttpResponse(status=204)
 
 

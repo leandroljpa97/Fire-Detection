@@ -13,4 +13,7 @@ urlpatterns = [
 	path('fires/', csrf_exempt(views.fires), name = 'fires'),
 	path('allFires/', csrf_exempt(views.allFires), name = 'Afires'),
 	path('periodic/', csrf_exempt(views.downlink), name = 'periodic'),
+	path('deleteUser/', csrf_exempt(views.deleteUser), name = 'delete'),
+	path('deleteDevice/', csrf_exempt(views.deleteDevice), name = 'deleteDevice'),
+
     ]
