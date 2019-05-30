@@ -183,11 +183,13 @@ def downlink(request):
 		body = json.loads(body_unicode)
 		_data = body['data']
 		
-		if int(ast.literal_eval(_data)) == 1:
-			return HttpResponse(status = 204)
+		if int(_data) == 1:
+			print("é downlink e para mim - sou a funcao downlink")
 		
-		deviceId = int(ast.literal_eval(body['device']))
-		return HttpResponse(json.dumps({deviceId: {"downlinkData": sendData}}), content_type="application/json")
+			deviceId = int(ast.literal_eval(body['device']))
+			return HttpResponse(json.dumps({deviceId: {"downlinkData": sendData}}), content_type="application/json")
+		else:
+			print("isto e uplink nao e p mim- sou o downlink")
 	
 	return HttpResponse(status = 204)
 		

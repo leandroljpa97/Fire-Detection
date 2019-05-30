@@ -18,6 +18,8 @@ from django.db import connection
 from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import now
+from django.forms.models import model_to_dict
+
 
 alarmState = 0
 bombState = 0
@@ -151,7 +153,7 @@ def fires(request):
 
 
 def actualState(request):
-	global enableAlarm
+	global alarmEnable
 	
 	if request.method == 'POST':
 		if not checkUser(request):
@@ -164,9 +166,12 @@ def actualState(request):
 		if _conditions.count() > 0:
 			_conditions = Conditions.objects.filter( device = _device[0]._id).order_by('date').last()
 			response_data['humidity'] = _conditions.humidity
+			print("conditions.humidity")
+			print(_conditions.humidity)
 			response_data['temperature'] = _conditions.temperature
 			response_data['gas'] = _conditions.gas
-			response_data['enableAlarm'] = enableAlarm
+			response_data['alarmEnable'] = alarmEnable
+			print(response_data)
 			return HttpResponse(json.dumps(response_data), content_type="application/json")
 		return HttpResponse(status = 204)
 
@@ -251,25 +256,36 @@ def Uplink(request):
 	if request.method == 'POST':
 		body_unicode = request.body.decode('utf-8')
 		body = json.loads(body_unicode)
+		#_data = request.POST.get('data','')
 		_data = body['data']
 
 
 
-		if int(ast.literal_eval(_data))==1:
+		if int((_data)) ==1:
+			print("isto e de downlink. nao e para mim, po crlh- sou")
 			return HttpResponse(status=204)
 
 		else:
-			_id = int(ast.literal_eval(body['device']))
-			aux = str(int(ast.literal_eval(_data)))
+			_id = int(body['device'])
+			print(_id)
+			# aux = str(int(ast.literal_eval(_data)))
+			aux = _data
 			out = [(aux[i:i+3]) for i in range(0, len(aux), 3)]
 			
-			_temperature = int(ast.literal_eval(out[0]))
-			_humidity =  int(ast.literal_eval(out[1]))
-			_gas =  int(ast.literal_eval(out[2]))
+			_temperature = int((out[0]))
+			print(_temperature)
+			print(type(_temperature))
+			x = 4
+			print(type(x))
+			_humidity =  int((out[1]))
+			print(_humidity)
+			_gas =  int((out[2]))
+			print(_gas)
 			## alarmState = int(ast.literal_eval(out[3]))
 			## bombState = int(ast.literal_eval(out[4]))
 
-			_fire =  int(ast.literal_eval(out[3]))
+			_fire =  int((out[3]))
+			print(_fire)
 
 			if _fire != 0:
 				print(_fire)
