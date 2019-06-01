@@ -19,8 +19,8 @@ from django.utils import timezone
 # Create your views here.
 
 #threshold default values
-temperatureTh = 0
-humidityTh = 0
+temperatureTh = 40
+humidityTh = 50
 gasTh = 0
 
 
@@ -178,31 +178,40 @@ def downlink(request):
 
 	sendData = auxTemp + auxHum + auxGas + str(alarmEnable) + str(alarmState) + str(bombState) + "0000000"
 	
+	alarmState = 0
+	bombState = 0
+	
 	if request.method == 'POST':
 		body_unicode = request.body.decode('utf-8')
 		body = json.loads(body_unicode)
 		_data = body['data']
 		
-		if int(_data) == 1:
-			print("é downlink e para mim - sou a funcao downlink")
-		
+		if int(_data) == 1:		
 			deviceId = int(ast.literal_eval(body['device']))
 			return HttpResponse(json.dumps({deviceId: {"downlinkData": sendData}}), content_type="application/json")
-		else:
-			print("isto e uplink nao e p mim- sou o downlink")
-	
+				
 	return HttpResponse(status = 204)
 		
 
 
 def deleteUser(request):
 	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
 		_name = request.POST.get('username', '')
 		Users.objects.filter(username= _name).delete()
+		Devices.objects.filter(username = _name).delete()
 		return HttpResponse(status = 204)
+	return HttpResponse(status = 204)
 
 def deleteDevice(request):
 	if request.method == 'POST':
+		if not checkAdmin(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
 		id = request.POST.get('id', '')
 		Devices.objects.filter(_id = id).delete()
+		Conditions.objects.filter(device = id)
 		return HttpResponse(status = 204)
+	return HttpResponse(status = 204)

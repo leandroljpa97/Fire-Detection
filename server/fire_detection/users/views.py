@@ -5,7 +5,7 @@ from django.db.models import Count, Q
 import requests
 from django.utils.timezone import now
 from management.models import Users, Devices, Fires, Secrets, Conditions, Notifications
-# from pusher_push_notifications import PushNotifications
+from pusher_push_notifications import PushNotifications
 import random
 import ast
 
@@ -196,6 +196,9 @@ def Fresh(request):
 
 
 def Push(_device):
+
+	_dev =Devices.objects.filter( _id = _device).last()
+
 	beams_client = PushNotifications(
 		instance_id = '1a81f3fb-fa47-4820-9742-bf752a077700',
 		secret_key = '5BCD4BB732BD48B78403BD3A35B2946A1B9FF58DD90D5B3F8AB938AE68EBE235',
@@ -211,8 +214,8 @@ def Push(_device):
 		},
 		'fcm': {
 		    'notification': {
-		        'title': 'Atention, Fire in device '+ _device,
-		        'body': 'Fire in device '+ _device
+		        'title': 'Attention, Fire in device '+ str(_device),
+		        'body': 'Fire in  '+ str(_dev.localization)
 		    }
 		}
 	    }
@@ -226,9 +229,9 @@ def newFire(_device):
 		newId = 1
 	else:
 		newId = lastFire._id + 1
-		_newFire = Fires(_id = newId, date= now(), device = _device, description ='Admin did not put any description yet');
-		_newFire.save()
-		return HttpResponse('<p> New Fire </p>')
+	_newFire = Fires(_id = newId, date= now(), device = _device, description ='Admin did not put any description yet');
+	_newFire.save()
+	return HttpResponse('<p> New Fire </p>')
 
 
 def getAlarmAndBombState(request):
@@ -238,13 +241,40 @@ def getAlarmAndBombState(request):
 
 	response_data = {}
 	response_data['alarm'] = alarmState
-	response['bomb'] = bombState
+	response_data['bomb'] = bombState
 	return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 def enableAlarm(request):
 	global alarmEnable
 	if request.method == "POST":
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
 		alarmEnable = int(ast.literal_eval(request.POST.get('alarmEnable','')))
+		return HttpResponse(status=204)
+	return HttpResponse(status=204)
+
+
+def postAlarmState(request):
+	global alarmState
+
+	if request.method == "POST":
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
+		alarmState = int(ast.literal_eval(request.POST.get('alarmState','')))
+		return HttpResponse(status=204)
+	return HttpResponse(status=204)
+
+
+def postBombState(request):
+	global bombState
+
+	if request.method == "POST":
+		if not checkUser(request):
+			return HttpResponse("Error: Invalid Login", content_type = "text/plain", status = 401)
+
+		bombState= int(ast.literal_eval(request.POST.get('bombState','')))
 		return HttpResponse(status=204)
 	return HttpResponse(status=204)
 
@@ -262,7 +292,6 @@ def Uplink(request):
 
 
 		if int((_data)) ==1:
-			print("isto e de downlink. nao e para mim, po crlh- sou")
 			return HttpResponse(status=204)
 
 		else:
@@ -274,9 +303,6 @@ def Uplink(request):
 			
 			_temperature = int((out[0]))
 			print(_temperature)
-			print(type(_temperature))
-			x = 4
-			print(type(x))
 			_humidity =  int((out[1]))
 			print(_humidity)
 			_gas =  int((out[2]))

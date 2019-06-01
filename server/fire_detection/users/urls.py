@@ -18,6 +18,10 @@ urlpatterns = [
     path('fire/',csrf_exempt(views.aux), name = 'fire'),
     path('alarm/',csrf_exempt(views.enableAlarm), name = 'enablealarm'),
     path('state/',csrf_exempt(views.getAlarmAndBombState), name = 'AlarmAndBombState'),
+    path('bombState/',csrf_exempt(views.postBombState), name = 'postBombState'),
+    path('alarmState/',csrf_exempt(views.postAlarmState), name = 'postAlarmState'),
+
+
 
 
     ]
